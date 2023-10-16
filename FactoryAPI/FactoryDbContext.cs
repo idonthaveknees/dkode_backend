@@ -7,6 +7,6 @@ namespace FactoryAPI
     {
         public DbSet<Item>? Items { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("DataSource = factorydb.db; Cache=Shared");
+            => options.UseSqlServer("server=.;database=(localdb)\\ProjectModels;trusted_connection=true;TrustServerCertificate=True; ");
     }
 }

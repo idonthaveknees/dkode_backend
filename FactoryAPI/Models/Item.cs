@@ -8,7 +8,7 @@ namespace FactoryAPI.Models
         public string Name { get; set; }
         public string? Description { get; set; }
 
-        [Column(TypeName = "decimal(5, 2)")]
+        [Column(TypeName = "MONEY")]
         public decimal Price { get; set; }
     }
 }
