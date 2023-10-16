@@ -8,39 +8,71 @@ namespace FactoryAPI.Controllers
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        FactoryDbContext _context = new FactoryDbContext();
+        private readonly FactoryDbContext _context;
+
+        public ItemsController(FactoryDbContext context)
+        {
+            _context = context;
+        }
 
         // Create a new item
         [HttpPost]
-        public async Task<IActionResult> Create(Item item)
+        public async Task<ActionResult<List<Item>>> Create(Item item)
         {
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
-
-            return new CreatedAtActionResult(nameof(GetById),
-                                             "Items",
-                                             new { id = item.Id },
-                                             item);
+            return Ok(await _context.Items.ToListAsync());
         }
 
         // Retrieve a single item
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<ActionResult<Item>> GetById(int id)
         {
-            var item = _context.Items.Find(id);
-            return item == null ? NotFound() : Ok(item);
+            var item = await _context.Items.FindAsync(id);
+            return item == null ? BadRequest("Item not found.") : Ok(item);
         }
 
         // Retrieve all items (only if you'll be using an ORM framework)
         [HttpGet]
-        public Task<List<Item>> GetAll() =>
-            _context.Items.OrderBy(p => p.Id).ToListAsync();
+        public async Task<ActionResult<List<Item>>> GetAll() 
+        {
+            return Ok(await _context.Items.ToListAsync());
+        }
 
         // Update an existing item
+        [HttpPut]
+        public async Task<ActionResult<List<Item>>> Update(Item request)
+        {
+            var item = await _context.Items.FindAsync(request.Id);
 
+            if (item == null) 
+            {
+                return BadRequest("Item not found.");
+            }
+
+            item.Name = request.Name;
+            item.Description = request.Description;
+            item.Price = request.Price;
+            await _context.SaveChangesAsync();
+
+            return Ok(await _context.Items.ToListAsync());
+        }
 
         // Delete an item
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<List<Item>>> Delete(int id) 
+        {
+            var item = await _context.Items.FindAsync(id);
+            
+            if (item == null) 
+            {
+                return BadRequest("Item not found.");
+            }
 
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
 
+            return Ok(await _context.Items.ToListAsync());
+        } 
     }
 }
